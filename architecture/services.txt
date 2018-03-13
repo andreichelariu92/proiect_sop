@@ -1,0 +1,20 @@
+TicketService:
+POST /TicketService/grantingTickets
+DELETE /TicketService/granting_ticket_hash
+POST /TicketService/tickets
+
+DHCPService:
+GET /DHCPService/config_file?ticket=t
+POST /DHCPService/config_file?ticket=t //append to file
+PUT /DHCPService/config_file?ticket=t // override file
+POST /DHCPManager/commands?ticket=t&command=c //command can be start or stop
+
+RequestService:
+GET /RequestService/requests?ticket=t
+PUT /RequestService/request/x?ticket=t //override request with id x
+POST /RequestService/requests?ticket=t //append request
+DELETE /RequestService/request/x
+
+UserService:
+GET /UserService/user?username=u //get username and password
+POST /UserManager/users
