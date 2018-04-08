@@ -2,3 +2,4 @@
 *.swp
 *.swo
 ticket_service/build/
+*.so
