@@ -44,7 +44,8 @@ typedef struct Cipher Cipher_t;
  * iv (initialization vector) for encryption / decryption.
  * NULL is returned in case of error.
  */
-Cipher_t* gcrypt_aux_makeCipher(char* key, char* iv);
+Cipher_t* gcrypt_aux_makeCipher(const char* key, 
+            const char* iv);
 
 /**
  * \brief
@@ -54,7 +55,9 @@ Cipher_t* gcrypt_aux_makeCipher(char* key, char* iv);
  * The size of the encryted buffer is dataSize.
  *
  */
-char* gcrypt_aux_encrypt(Cipher_t* c, char* data, int dataSize);
+char* gcrypt_aux_encrypt(Cipher_t* c, 
+        const char* data, 
+        int dataSize);
 
 /**
  * \brief
@@ -64,12 +67,12 @@ char* gcrypt_aux_encrypt(Cipher_t* c, char* data, int dataSize);
  * The size of the decrypted buffer is dataSize.
  */
 char* gcrypt_aux_decrypt(Cipher_t* c, 
-        char* data, 
+        const char* data, 
         int dataSize);
 
 /**
  * \brief
  * Destroy the sepcifed Cipher.
  */
-void gcrypt_aux_destroy_cipher(Cipher_t* c);
+void gcrypt_aux_destroyCipher(Cipher_t* c);
 #endif

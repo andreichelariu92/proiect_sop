@@ -190,7 +190,8 @@ const char* gcrypt_aux_getErrorMessage()
     return g_errorMessage;
 }
 
-Cipher_t* gcrypt_aux_makeCipher(char* key, char* iv)
+Cipher_t* gcrypt_aux_makeCipher(const char* key, 
+        const char* iv)
 {
     Cipher_t* cipher = NULL;
     gcry_error_t err = 0;
@@ -221,7 +222,7 @@ Cipher_t* gcrypt_aux_makeCipher(char* key, char* iv)
 }
 
 char* gcrypt_aux_encrypt(Cipher_t* c, 
-        char* data, 
+        const char* data, 
         int dataSize)
 {
     char* output = NULL;
@@ -271,7 +272,7 @@ char* gcrypt_aux_encrypt(Cipher_t* c,
 }
 
 char* gcrypt_aux_decrypt(Cipher_t* c, 
-        char* data, 
+        const char* data, 
         int dataSize)
 {
     char* output = NULL;
@@ -321,7 +322,7 @@ char* gcrypt_aux_decrypt(Cipher_t* c,
 }
 
 
-void gcrypt_aux_destroy_cipher(Cipher_t* c)
+void gcrypt_aux_destroyCipher(Cipher_t* c)
 {
     //for the moment, this function does nothing
     CLEAR_ERRORS;
