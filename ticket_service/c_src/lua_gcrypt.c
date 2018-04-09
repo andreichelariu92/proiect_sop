@@ -155,8 +155,11 @@ static int makeCipher(lua_State* L)
     //save cipher
     *userData = cipher;
     //add metatable (for OOP methods)
-    luaL_getmetatable(L, "lua_gcrypt_cipher");
-    lua_setmetatable(L, -2);
+    luaL_getmetatable(L, "lua_gcrypt_cipher"); //metatable is on top (-1)
+    lua_setmetatable(L, -2); //userdata is bellow (-2)
+    
+    //TODO: Andrei: Find logging mechanism
+    printf("Cipher created successfully\n");
 
     return 1;
 }
@@ -216,9 +219,9 @@ static int encrypt(lua_State* L)
 static int decrypt(lua_State* L)
 {
     Cipher_t** cipherAddr = NULL;
-    const char* data;
-    size_t dataSize;
-    char* decryptedData;
+    const char* data = NULL;
+    size_t dataSize = 0;
+    char* decryptedData = NULL;
 
     //get cipher
     cipherAddr = luaL_checkudata(L, 1, "lua_gcrypt_cipher");
@@ -247,6 +250,24 @@ static int decrypt(lua_State* L)
     return 1;
 }
 
+/**
+ * \brief
+ * Function called by the garbage collector to destroy the cipher.
+ */
+static int destroyCipher(lua_State* L)
+{
+    Cipher_t** cipherAddr = NULL;
+
+    //get cipher from lua
+    cipherAddr = lua_touserdata(L, 1);
+    gcrypt_aux_destroyCipher(*cipherAddr);
+
+    //TODO: Andrei: find logging mechanism
+    printf("Cipher destroyed successfully\n");
+
+    return 0;
+}
+
 static const luaL_Reg lua_gcrypt[] = {
     {"generateKey", generateKey},
     {"generateIV", generateIV},
@@ -254,9 +275,31 @@ static const luaL_Reg lua_gcrypt[] = {
     {NULL, NULL}
 };
 
+static const luaL_Reg cipherMethods[] = {
+    {"encrypt", encrypt},
+    {"decrypt", decrypt},
+    {NULL, NULL}
+};
+
 int luaopen_lua_gcrypt(lua_State* L)
 {
+    //create metatable
     luaL_newmetatable(L, "lua_gcrypt_cipher");
+
+    //asign the metatable as __index variable
+    lua_pushvalue(L, -1);
+    lua_setfield(L, -2, "__index");
+
+    //assign the function called by the garbage collector
+    lua_pushstring(L, "__gc");
+    lua_pushcfunction(L, destroyCipher);
+    lua_settable(L, -3);
+
+    //set the cipher methods to the metatable
+    luaL_setfuncs(L, cipherMethods, 0);
+    
+    //Create a table with the public functions of the module
+    //and leave the table on top of the stack.
     luaL_newlib(L, lua_gcrypt);
     return 1;
 }
