@@ -324,6 +324,6 @@ char* gcrypt_aux_decrypt(Cipher_t* c,
 
 void gcrypt_aux_destroyCipher(Cipher_t* c)
 {
-    //for the moment, this function does nothing
+    free(c);
     CLEAR_ERRORS;
 }
