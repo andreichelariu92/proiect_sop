@@ -179,7 +179,8 @@ char* gcrypt_aux_generateIV()
     }
     
     //generate random values
-    gcry_randomize(IV, AES_IV_SIZE, GCRY_STRONG_RANDOM);
+    //gcry_randomize(IV, AES_IV_SIZE, GCRY_STRONG_RANDOM);
+    gcry_create_nonce(IV, AES_IV_SIZE);
 
     CLEAR_ERRORS;
     return IV;
