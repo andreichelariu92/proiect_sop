@@ -37,7 +37,7 @@ local function dispach(myServer, stream)
     elseif not foundMethod then
         setHeaders(stream, METHOD_NOT_ALLOWED)
     else
-        foundMethod(stream)
+        foundMethod(stream, headers)
     end
 end
 
