@@ -1,3 +1,5 @@
+require("base64")
+
 local http_server = require("http.server")
 local http_headers = require("http.headers")
 
@@ -35,3 +37,49 @@ function fromHex(str)
                 return string.char(tonumber(cc, 16))
             end))
 end
+
+function getCredentialsFromHeaders(headers)
+    local authority = headers:get("authorization")
+    if not authority then
+        return nil
+    end
+
+    -- Remove "Basic" from the begining of the string.
+    local b, e = string.find(authority, "Basic ")
+    authority = string.sub(authority, e+1)
+    
+    --Decode from base64.
+    local userPass = fromBase64(authority)
+    if userPass == "" then
+        return nil
+    end
+
+    --Extract user and pass.
+    local user = nil
+    local pass = nil
+    for s in string.gmatch(userPass, "%w+") do
+        if user == nil then
+            user = s
+        elseif pass == nil then
+            pass = s
+        else
+            break
+        end
+    end
+    if user == nil or pass == nil then
+        return nil
+    end
+
+    return user, pass
+end
+
+function getKeyFromHeaders(headers, pattern)
+    local uri = headers:get(":path")
+    if not uri then
+        return nil
+    end
+
+    local key = string.match(uri, pattern)
+    return key
+end
+
