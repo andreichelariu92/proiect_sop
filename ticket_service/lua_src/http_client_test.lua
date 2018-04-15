@@ -7,6 +7,7 @@ local openssl_ctx = require "openssl.ssl.context"
 --Create SSL context that accepts self signed certificates.
 local context = http_tls:new_client_context()
 context:setVerify(openssl_ctx.VERIFY_NONE)
+
 --Perform POST request to create a new granting ticket.
 local getRequest = http_request.new_from_uri("https://localhost:8080/TicketService/GrantingTickets")
 getRequest.ctx = context
@@ -32,6 +33,8 @@ if not resourceUri then
     return
 end
 
+print("")
+
 --Perform GET request on the newly created granting ticket.
 local getRequest = http_request.new_from_uri("https://localhost:8080" .. resourceUri)
 getRequest.ctx = context
@@ -41,7 +44,7 @@ getRequest.headers:upsert(":method", "GET")
 getRequest.headers:upsert("authorization","Basic " .. userPass)
 local getHeaders, getStream = getRequest:go(100)
 --Print headers of the request
-print("Get headers ", getHeaders, " getStream ", getStream)
+print("GET headers ", getHeaders, " getStream ", getStream)
 if getHeaders then
     print("Headers of GET request: ")
     for k, v in getHeaders:each() do
@@ -51,4 +54,23 @@ end
 --Print the body of the request (html representation of the granting ticket).
 if getStream then
     print(getStream:get_body_as_string())
+end
+
+print("")
+
+--Perform DELETE request on the newly created granting ticket.
+local deleteRequest = http_request.new_from_uri("https://localhost:8080" .. resourceUri)
+deleteRequest.ctx = context
+deleteRequest.tls = true
+local userPass = toBase64("andreichelariu:blah")
+deleteRequest.headers:upsert(":method", "DELETE")
+deleteRequest.headers:upsert("authorization","Basic " .. userPass)
+local deleteHeaders, deleteStream = deleteRequest:go(100)
+--Print headers of the request
+print("DELETE headers ", deleteHeaders, " deleteStream ", deleteStream)
+if deleteHeaders then
+    print("Headers of DELETE request: ")
+    for k, v in deleteHeaders:each() do
+        print(k, v)
+    end
 end
