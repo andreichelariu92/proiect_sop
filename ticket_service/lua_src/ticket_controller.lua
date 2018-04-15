@@ -1,5 +1,4 @@
 require("http_common")
-require("base64")
 
 require("ticket_model")
 require ("ticket_view")
@@ -9,33 +8,6 @@ local http_server = require("http.server")
 local http_headers = require("http.headers")
 local http_util = require("http.util")
 
-
-local function splitAuthorization(authority)
-    -- Remove "Basic" from the begining of the string.
-    local b, e = string.find(authority, "Basic ")
-    authority = string.sub(authority, e+1)
-    --Decode from base64.
-    local userPass = fromBase64(authority)
-    if userPass == "" then
-        return nil
-    end
-    --Extract user and pass.
-    local user = nil
-    local pass = nil
-    for s in string.gmatch(userPass, "%w+") do
-        if user == nil then
-            user = s
-        elseif pass == nil then
-            pass = s
-        else
-            break
-        end
-    end
-    if user == nil or pass == nil then
-        return nil
-    end
-    return user, pass
-end
 
 local function postGrantingTicket(stream)
     local seconds = 2 -- wait 2 seconds to get the request
@@ -78,31 +50,36 @@ end
 
 function getGrantingTicket(stream, headers)
     --Get user and password form authorization header.
-    local authorization = headers:get("authorization")
-    if not authorization then
-        setHeaders(stream, NOT_AUTHORIZED)
-    end
-    local user, pass = splitAuthorization(authorization)
+    local user, pass = getCredentialsFromHeaders(headers)
     if user == nil or pass == nil then
         setHeaders(stream, NOT_AUTHORIZED)
     end
-    --Verify user.
+    
+    --Extract user key from the uri.
+    local pattern = "/TicketService/GrantingTickets/(%x+)"
+    local userKey = getKeyFromHeaders(headers, pattern)
+    if not userKey then
+        setHeaders(stream, BAD_REQUEST)
+    end
+    
+    --Check if user exists in database.
     local validUser = checkUser(user, pass)
     if not validUser then
         setHeaders(stream, NOT_AUTHORIZED)
     end
-    --Extract user key from the uri.
-    local uri = headers:get(":path")
-    local pattern = "/TicketService/GrantingTickets/(%x+)"
-    local userKey = string.match(uri, pattern)
-    if not userKey then
-        setHeaders(stream, BAD_REQUEST)
+
+    --Check if user is the owner of the ticket.
+    local owner = getGrantingTicketOwner(userKey)
+    if owner ~= user then
+        setHeaders(stream, NOT_AUTHORIZED)
     end
+
     --Get the granting ticket for the corresponding key.
     local gt = searchGrantingTicket(userKey)
     if not gt then
         setHeaders(stream, NOT_FOUND)
     end
+
     --Prepare the html with the output and write it
     --to the client.
     local html = renderGrantingTicket(gt)
@@ -114,10 +91,44 @@ function getGrantingTicket(stream, headers)
     stream:write_chunk(html, true)
 end
 
+local function deleteGrantingTicket(stream, headers)
+    --Get user and password form authorization header.
+    local user, pass = getCredentialsFromHeaders(headers)
+    if user == nil or pass == nil then
+        setHeaders(stream, NOT_AUTHORIZED)
+    end
+
+    --Extract user key from the uri.
+    local pattern = "/TicketService/GrantingTickets/(%x+)"
+    local userKey = getKeyFromHeaders(headers, pattern)
+    if not userKey then
+        setHeaders(stream, BAD_REQUEST)
+    end
+
+    --Check the user exists in the database.
+    local validUser = checkUser(user, pass)
+    if not validUser then
+        setHeaders(stream, NOT_AUTHORIZED)
+    end
+
+    --Check the user is the owner of the ticket
+    local owner = getGrantingTicketOwner(userKey)
+    if owner ~= user then
+        setHeaders(stream, NOT_AUTHORIZED)
+    end
+
+    --Delete the granting ticket from the in memory list.
+    removeGrantingTicket(userKey)
+    --Set status to 200.
+    setHeaders(stream, SUCCESS)
+    stream:write_chunk("", true)
+end
+
 local ticketController = {
     pattern = string.lower("/TicketService/GrantingTickets"),
     post = postGrantingTicket,
-    get = getGrantingTicket
+    get = getGrantingTicket,
+    delete = deleteGrantingTicket
 }
 
 return ticketController
