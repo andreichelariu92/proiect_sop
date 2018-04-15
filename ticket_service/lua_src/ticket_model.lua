@@ -64,7 +64,8 @@ function makeGrantingTicket(user, role)
     local output = {
         ["blob"] = encryptedData,
         ["key"] = userTable.key,
-        ["IV"] = userTable.IV
+        ["IV"] = userTable.IV,
+	["user"] = userTable.user
     }
 
     g_grantingTickets[output.key] = output
@@ -73,4 +74,17 @@ end
 
 function searchGrantingTicket(userKey)
     return g_grantingTickets[fromHex(userKey)]
+end
+
+function removeGrantingTicket(userKey)
+    g_grantingTickets[fromHex(userKey)] = nil
+end
+
+function getGrantingTicketOwner(key)
+    local gt = g_grantingTickets[fromHex(key)]
+    if gt then
+        return gt.user
+    else
+        return nil
+    end
 end
