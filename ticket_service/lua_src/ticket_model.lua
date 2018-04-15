@@ -62,11 +62,15 @@ function makeGrantingTicket(user, role)
     local encryptedData = cipher:encrypt(addPadding(html))
     --return encrypted granting ticket, key and IV
     local output = {
-        ["grantingTicket"] = encryptedData,
+        ["blob"] = encryptedData,
         ["key"] = userTable.key,
         ["IV"] = userTable.IV
     }
 
     g_grantingTickets[output.key] = output
     return output
+end
+
+function searchGrantingTicket(userKey)
+    return g_grantingTickets[fromHex(userKey)]
 end
