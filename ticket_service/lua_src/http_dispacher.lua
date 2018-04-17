@@ -1,7 +1,12 @@
 local http_server = require("http.server")
 local http_headers = require("http.headers")
+
 local ticketController = require("ticket_controller")
-local g_controllers = {ticketController}
+local serviceKeyController = require("service_key_controller")
+local g_controllers = {
+    ticketController,
+    serviceKeyController
+}
 
 local function dispach(myServer, stream)
     --Extract method and URI from http request.
