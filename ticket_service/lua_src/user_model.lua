@@ -4,3 +4,8 @@ function checkUser(user, pass)
     return true
 end
 
+function checkService(service_key, pass)
+    --TODO: ANdrei: User the service from Vasile
+    --to check the service credentials.
+    return true
+end
