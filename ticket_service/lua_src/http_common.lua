@@ -11,6 +11,8 @@ NOT_AUTHORIZED = "401"
 NOT_FOUND = "404"
 METHOD_NOT_ALLOWED = "405"
 
+SERVER_ERROR = "500"
+
 function setHeaders(stream, errorCode, location)
     local finishStream = (errorCode ~= "200")
 
