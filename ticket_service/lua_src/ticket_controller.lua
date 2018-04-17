@@ -4,6 +4,7 @@ require("ticket_model")
 require ("ticket_view")
 
 require("user_model")
+
 local http_server = require("http.server")
 local http_headers = require("http.headers")
 local http_util = require("http.util")
@@ -11,7 +12,7 @@ local http_util = require("http.util")
 
 local function postGrantingTicket(stream)
     local seconds = 2 -- wait 2 seconds to get the request
-    local body = stream:get_body_as_string(request)
+    local body = stream:get_body_as_string(seconds)
     
     if not body then
         setHeaders(stream, BAD_REQUEST)
@@ -116,7 +117,9 @@ local function deleteGrantingTicket(stream, headers)
     if owner ~= user then
         setHeaders(stream, NOT_AUTHORIZED)
     end
-
+    
+    --TODO: Andrei: Check if the ticket exists; if not, return 404.
+    
     --Delete the granting ticket from the in memory list.
     removeGrantingTicket(userKey)
     --Set status to 200.
