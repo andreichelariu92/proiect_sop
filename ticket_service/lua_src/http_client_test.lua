@@ -74,3 +74,88 @@ if deleteHeaders then
         print(k, v)
     end
 end
+
+local function createServiceKey(sslContext)
+    local getRequest = http_request.new_from_uri("https://localhost:8080/TicketService/ServiceKeys")
+    getRequest.ctx = sslContext
+    getRequest.tls = true
+    getRequest.headers:upsert(":method", "POST")
+    getRequest.headers:append("content-type", "application/x-www-form-urlencoded")
+    getRequest:set_body("service_name=leService&pass=blah")
+    local headers, stream =getRequest:go(100)
+    --Save the URI of the new resource.
+    local resourceUri = nil
+    if headers then
+        print("Headers of POST request: ")
+        for k, v in headers:each() do
+            if k == "content-location" then
+                resourceUri = v
+            end
+            print(k, v)
+        end
+    end
+
+    return resourceUri
+end
+
+local function readServiceKey(uri, sslContext)
+    local authorization = toBase64("leService:blah")
+    
+    local request = http_request.new_from_uri("https://localhost:8080" .. uri)
+    request.ctx = sslContext
+    request.tls = true
+    request.headers:upsert(":method", "GET")
+    request.headers:upsert("authorization", "Basic " .. authorization)
+    
+    local headers, stream = request:go(100)
+    
+    if headers then
+        print("Headers of GET request: ")
+        for k, v in headers:each() do
+            print(k, v)
+        end
+    end
+
+    local body = nil
+    if stream then
+        body = stream:get_body_as_string()
+    end
+
+    return body
+end
+
+local function deleteServiceKey(uri, sslContext)
+    local authorization = toBase64("leService:blah")
+
+    local request = http_request.new_from_uri("https://localhost:8080" .. uri)
+    request.ctx = sslContext
+    request.tls = true
+    request.headers:upsert(":method", "DELETE")
+    request.headers:upsert("authorization", "Basic " .. authorization)
+    
+    local success = false
+    local headers, stream = request:go(100)
+    if headers then
+        print("Headers of DELETE request: ")
+        for k, v in headers:each() do
+            print(k, v)
+            if k == ":status" then
+                success = v
+            end
+        end
+    end
+
+    return success
+end
+
+print("")
+local serviceKeyUri = createServiceKey(context)
+print(serviceKeyUri)
+
+--print("")
+--local serviceKey = readServiceKey(serviceKeyUri, context)
+--print(serviceKey)
+
+print("")
+local deleteSuccess = deleteServiceKey(serviceKeyUri, context)
+print(deleteSuccess)
