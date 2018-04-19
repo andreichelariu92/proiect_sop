@@ -14,8 +14,8 @@ function makeServiceKey(service_name)
     local iv = gcrypt.generateIV()
 
     local output = {
-        ["key"] = key
-        ["IV"] = iv
+        ["key"] = key,
+        ["IV"] = iv,
         ["service_name"] = service_name
     }
     
