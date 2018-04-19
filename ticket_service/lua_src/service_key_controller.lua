@@ -108,6 +108,7 @@ local function deleteServiceKey(stream, headers)
     end
 
     --Check if the service is the owner of the key.
+    local serviceKey = searchServiceKey(key)
     if serviceKey.service_name ~= service_name then
         setHeaders(stream, NOT_AUTHORIZED)
     end
@@ -119,7 +120,7 @@ local function deleteServiceKey(stream, headers)
 
     --Set status 200.
     setHeaders(stream, SUCCESS)
-    stream:write("", true)
+    stream:write_chunk("", true)
 end
 
 local serviceKeyController = {
