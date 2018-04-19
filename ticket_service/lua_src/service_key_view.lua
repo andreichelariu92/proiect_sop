@@ -1,3 +1,5 @@
+require("http_common")
+
 function renderServiceKey(serviceKey)
     local output = string.format([[
         <html>
@@ -9,8 +11,8 @@ function renderServiceKey(serviceKey)
         </html>
     ]],
     serviceKey.service_name,
-    serviceKey.key,
-    serviceKey.IV)
+    toHex(serviceKey.key),
+    toHex(serviceKey.IV))
 
     return output
 end
