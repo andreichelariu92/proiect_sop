@@ -1,7 +1,7 @@
 require("http_common")
 
-require("ticket_model")
-require ("ticket_view")
+require("granting_ticket_model")
+require ("granting_ticket_view")
 
 require("user_model")
 
@@ -127,11 +127,11 @@ local function deleteGrantingTicket(stream, headers)
     stream:write_chunk("", true)
 end
 
-local ticketController = {
+local grantingTicketController = {
     pattern = string.lower("/TicketService/GrantingTickets"),
     post = postGrantingTicket,
     get = getGrantingTicket,
     delete = deleteGrantingTicket
 }
 
-return ticketController
+return grantingTicketController

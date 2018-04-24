@@ -1,10 +1,10 @@
 local http_server = require("http.server")
 local http_headers = require("http.headers")
 
-local ticketController = require("ticket_controller")
+local grantingTicketController = require("granting_ticket_controller")
 local serviceKeyController = require("service_key_controller")
 local g_controllers = {
-    ticketController,
+    grantingTicketController,
     serviceKeyController
 }
 
