@@ -2,7 +2,8 @@ require("base64")
 
 local http_request = require("http.request")
 local http_tls = require("http.tls")
-local openssl_ctx = require "openssl.ssl.context"
+local openssl_ctx = require("openssl.ssl.context")
+local http_util = require("http.util")
 
 --Create SSL context that accepts self signed certificates.
 local context = http_tls:new_client_context()
@@ -59,6 +60,7 @@ end
 print("")
 
 --Perform DELETE request on the newly created granting ticket.
+--[[
 local deleteRequest = http_request.new_from_uri("https://localhost:8080" .. resourceUri)
 deleteRequest.ctx = context
 deleteRequest.tls = true
@@ -74,7 +76,7 @@ if deleteHeaders then
         print(k, v)
     end
 end
-
+]]--
 local function createServiceKey(sslContext)
     local getRequest = http_request.new_from_uri("https://localhost:8080/TicketService/ServiceKeys")
     getRequest.ctx = sslContext
@@ -114,6 +116,8 @@ local function readServiceKey(uri, sslContext)
         for k, v in headers:each() do
             print(k, v)
         end
+    else
+        print("Error reading request ", uri)
     end
 
     local body = nil
@@ -148,14 +152,51 @@ local function deleteServiceKey(uri, sslContext)
     return success
 end
 
+local function createTicket(grantingTicketUri, serviceName, sslContext)
+    local formParameters = string.format("grantingTicket=%s&serviceName=%s",
+                            grantingTicketUri,
+                            serviceName)
+    local userPass = toBase64("andreichelariu:blah")
+    
+    local ticketUri = nil
+
+    local postRequest = http_request.new_from_uri("https://localhost:8080/TicketService/Tickets")
+    postRequest.ctx = sslContext
+    postRequest.tls = true
+    postRequest.headers:upsert(":method", "POST")
+    postRequest.headers:append("content-type", "application/x-www-form-urlencoded")
+    postRequest.headers:upsert("authorization","Basic " .. userPass)
+
+    postRequest:set_body(formParameters)
+    
+    local headers, stream = postRequest:go(100)
+    --Save the URI of the new resource.
+    local resourceUri = nil
+    if headers then
+        print("Headers of POST request: ")
+        for k, v in headers:each() do
+            if k == "content-location" then
+                ticketUri = v
+            end
+            print(k, v)
+        end
+    end
+
+    return ticketUri
+end
+
 print("")
 local serviceKeyUri = createServiceKey(context)
 print(serviceKeyUri)
 
---print("")
---local serviceKey = readServiceKey(serviceKeyUri, context)
---print(serviceKey)
-
+print("")
+local serviceKey = readServiceKey(serviceKeyUri, context)
+print(serviceKey)
+--[[
 print("")
 local deleteSuccess = deleteServiceKey(serviceKeyUri, context)
 print(deleteSuccess)
+]]--
+print("")
+local ticketUri = createTicket("https://localhost:8080" .. resourceUri, "leService", context)
+print(ticketUri)
