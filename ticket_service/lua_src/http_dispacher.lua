@@ -3,9 +3,11 @@ local http_headers = require("http.headers")
 
 local grantingTicketController = require("granting_ticket_controller")
 local serviceKeyController = require("service_key_controller")
+local ticketController = require("ticket_controller")
 local g_controllers = {
     grantingTicketController,
-    serviceKeyController
+    serviceKeyController,
+    ticketController
 }
 
 local function dispach(myServer, stream)
