@@ -1,13 +1,13 @@
 local gcrypt = require("lua_gcrypt")
---------------------------------------------------------------------------------
------------------------------ Private variables --------------------------------
---------------------------------------------------------------------------------
+-----------------------------------------------------
+---------------- Private variables ------------------
+-----------------------------------------------------
 local g_serviceKeys = {}
 
 
---------------------------------------------------------------------------------
------------------------------ Public functions ---------------------------------
---------------------------------------------------------------------------------
+-----------------------------------------------------
+----------------Public functions --------------------
+-----------------------------------------------------
 
 function makeServiceKey(service_name)
     local key = gcrypt.generateKey()
@@ -24,8 +24,23 @@ function makeServiceKey(service_name)
     return output
 end
 
-function searchServiceKey(key)
-    return g_serviceKeys[fromHex(key)]
+function searchServiceKey(field, value)
+    --Default search is based on key.
+    field = field or "key"
+
+    if field == "key" then
+        return g_serviceKeys[fromHex(value)]
+    end
+
+    if field == "service_name" then
+        for _, serviceKey in pairs(g_serviceKeys) do
+            if serviceKey.service_name == value then
+                return serviceKey
+            end
+        end
+
+        return nil
+    end
 end
 
 function removeServiceKey(key)

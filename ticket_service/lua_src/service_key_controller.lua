@@ -69,7 +69,7 @@ local function getServiceKey(stream, headers)
     end
 
     --Get service key from the in memory list.
-    local serviceKey = searchServiceKey(key)
+    local serviceKey = searchServiceKey("key", key)
     if not serviceKey then
         setHeaders(stream, NOT_FOUND)
     end
@@ -108,7 +108,7 @@ local function deleteServiceKey(stream, headers)
     end
 
     --Check if the service is the owner of the key.
-    local serviceKey = searchServiceKey(key)
+    local serviceKey = searchServiceKey("key", key)
     if serviceKey.service_name ~= service_name then
         setHeaders(stream, NOT_AUTHORIZED)
     end
