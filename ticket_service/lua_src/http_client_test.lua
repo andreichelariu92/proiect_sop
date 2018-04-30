@@ -185,6 +185,31 @@ local function createTicket(grantingTicketUri, serviceName, sslContext)
     return ticketUri
 end
 
+local function readTicket(ticketUri, sslContext)
+    local request = http_request.new_from_uri("https://localhost:8080" .. ticketUri)
+    request.ctx = sslContext
+    request.tls = true
+    request.headers:upsert(":method", "GET")
+    
+    local headers, stream = request:go(100)
+    
+    if headers then
+        print("Headers of GET request: ")
+        for k, v in headers:each() do
+            print(k, v)
+        end
+    else
+        print("Error reading request ", uri)
+    end
+
+    local body = nil
+    if stream then
+        body = stream:get_body_as_string()
+    end
+
+    return body
+end
+
 print("")
 local serviceKeyUri = createServiceKey(context)
 print(serviceKeyUri)
@@ -200,3 +225,7 @@ print(deleteSuccess)
 print("")
 local ticketUri = createTicket("https://localhost:8080" .. resourceUri, "leService", context)
 print(ticketUri)
+
+print("")
+local ticketHtml = readTicket(ticketUri, context)
+print(ticketHtml)
