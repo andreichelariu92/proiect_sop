@@ -16,3 +16,18 @@ function renderGrantingTicket(gt)
 
     return html
 end
+
+function renderTicket(ticket)
+    local html = string.format([[
+    <html>
+    <body>
+        <h1>Ticket</h1>
+        <p id="id">%d</p>
+        <p id="blob">%s</p>
+    </body>
+    </html>]],
+    ticket.id,
+    toHex(ticket.blob))
+
+    return html
+end
