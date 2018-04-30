@@ -195,5 +195,5 @@ function makeTicket(grantingTicket, serviceKey)
 end
 
 function searchTicket(ticketId)
-    return g_tickets[tonumber(ticketId)]
+    return g_tickets[ticketId]
 end
