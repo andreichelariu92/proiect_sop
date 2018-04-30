@@ -76,6 +76,10 @@ function getCredentialsFromHeaders(headers)
 end
 
 function getKeyFromHeaders(headers, pattern)
+    if not headers or not pattern then
+        return nil
+    end
+
     local uri = headers:get(":path")
     if not uri then
         return nil
