@@ -1,4 +1,6 @@
 require("http_common")
+require("granting_ticket_view")
+require("granting_ticket_model")
 
 local http_server = require("http.server")
 local http_headers = require("http.headers")
@@ -83,9 +85,37 @@ local function postTicket(stream, headers)
     setHeaders(stream, CREATED, newUri)
 end
 
+local function getTicket(stream, headers)
+    --Extract ticket id from URI.
+    local pattern = "/TicketService/Tickets/(%d+)"
+    local ticketId = getKeyFromHeaders(headers, 
+                        pattern)
+    ticketId = tonumber(ticketId)
+    if not ticketId then
+        setHeaders(stream, BAD_REQUEST)
+    end
+
+    --Get the ticket from the in memory list.
+    local ticket = searchTicket(ticketId)
+    if not ticket then
+        setHeaders(stream, NOT_FOUND)
+    end
+
+    --Prepare the html to be sent to the client.
+    local html = renderTicket(ticket)
+    if not html then
+        setHeaders(stream, SERVER_ERROR)
+    end
+
+    --Send the representation to the client.
+    setHeaders(stream, SUCCESS)
+    stream:write_chunk(html, true)
+end
+
 local ticketController = {
     pattern = string.lower("/TicketService/Tickets"),
-    ["post"] = postTicket
+    ["post"] = postTicket,
+    ["get"] = getTicket
 }
 
 return ticketController
