@@ -112,10 +112,52 @@ local function getTicket(stream, headers)
     stream:write_chunk(html, true)
 end
 
+local function deleteTicket(stream, headers)
+    --Extract ticket id from URI.
+    local pattern = "/TicketService/Tickets/(%d+)"
+    local ticketId = getKeyFromHeaders(headers, 
+                        pattern)
+    ticketId = tonumber(ticketId)
+    if not ticketId then
+        setHeaders(stream, BAD_REQUEST)
+    end
+    
+    --Get the ticket from the in memory list.
+    local ticket = searchTicket(ticketId)
+    if not ticket then
+        setHeaders(stream, NOT_FOUND)
+    end
+    
+    --Get the user from the authorization header.
+    local user, pass = 
+        getCredentialsFromHeaders(headers)
+    if user == nil or pass == nil then
+        setHeaders(stream, NOT_AUTHORIZED)
+    end
+
+    --Check if user exists in database.
+    local validUser = checkUser(user, pass)
+    if not validUser then
+        setHeaders(stream, NOT_AUTHORIZED)
+    end
+    
+    --Check if the user is the owner of the ticket.
+    if ticket.owner ~= user then
+        setHeaders(stream, NOT_AUTHORIZED)
+    end
+
+    --Remove the ticket from the in memory list.
+    removeTicket(ticket)
+    
+    --Set status to success.
+    setHeaders(stream, SUCCESS)
+    stream:write_chunk("", true)
+end
 local ticketController = {
     pattern = string.lower("/TicketService/Tickets"),
     ["post"] = postTicket,
-    ["get"] = getTicket
+    ["get"] = getTicket,
+    ["delete"] = deleteTicket
 }
 
 return ticketController
