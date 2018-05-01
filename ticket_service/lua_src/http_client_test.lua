@@ -59,24 +59,6 @@ end
 
 print("")
 
---Perform DELETE request on the newly created granting ticket.
---[[
-local deleteRequest = http_request.new_from_uri("https://localhost:8080" .. resourceUri)
-deleteRequest.ctx = context
-deleteRequest.tls = true
-local userPass = toBase64("andreichelariu:blah")
-deleteRequest.headers:upsert(":method", "DELETE")
-deleteRequest.headers:upsert("authorization","Basic " .. userPass)
-local deleteHeaders, deleteStream = deleteRequest:go(100)
---Print headers of the request
-print("DELETE headers ", deleteHeaders, " deleteStream ", deleteStream)
-if deleteHeaders then
-    print("Headers of DELETE request: ")
-    for k, v in deleteHeaders:each() do
-        print(k, v)
-    end
-end
-]]--
 local function createServiceKey(sslContext)
     local getRequest = http_request.new_from_uri("https://localhost:8080/TicketService/ServiceKeys")
     getRequest.ctx = sslContext
@@ -210,6 +192,30 @@ local function readTicket(ticketUri, sslContext)
     return body
 end
 
+local function deleteTicket(ticketUri, sslContext)
+    local authorization = toBase64("andreichelariu:blah")
+
+    local request = http_request.new_from_uri("https://localhost:8080" .. ticketUri)
+    request.ctx = sslContext
+    request.tls = true
+    request.headers:upsert(":method", "DELETE")
+    request.headers:upsert("authorization", "Basic " .. authorization)
+    
+    local success = false
+    local headers, stream = request:go(100)
+    if headers then
+        print("Headers of DELETE request: ")
+        for k, v in headers:each() do
+            print(k, v)
+            if k == ":status" then
+                success = v
+            end
+        end
+    end
+
+    return success
+end
+
 print("")
 local serviceKeyUri = createServiceKey(context)
 print(serviceKeyUri)
@@ -217,11 +223,7 @@ print(serviceKeyUri)
 print("")
 local serviceKey = readServiceKey(serviceKeyUri, context)
 print(serviceKey)
---[[
-print("")
-local deleteSuccess = deleteServiceKey(serviceKeyUri, context)
-print(deleteSuccess)
-]]--
+
 print("")
 local ticketUri = createTicket("https://localhost:8080" .. resourceUri, "leService", context)
 print(ticketUri)
@@ -229,3 +231,28 @@ print(ticketUri)
 print("")
 local ticketHtml = readTicket(ticketUri, context)
 print(ticketHtml)
+
+print("")
+local deleteSuccess = deleteTicket(ticketUri, context)
+print(deleteSuccess)
+
+print("")
+deleteSuccess = deleteServiceKey(serviceKeyUri, context)
+print(deleteSuccess)
+
+--Perform DELETE request on the newly created granting ticket.
+local deleteRequest = http_request.new_from_uri("https://localhost:8080" .. resourceUri)
+deleteRequest.ctx = context
+deleteRequest.tls = true
+local userPass = toBase64("andreichelariu:blah")
+deleteRequest.headers:upsert(":method", "DELETE")
+deleteRequest.headers:upsert("authorization","Basic " .. userPass)
+local deleteHeaders, deleteStream = deleteRequest:go(100)
+--Print headers of the request
+print("DELETE headers ", deleteHeaders, " deleteStream ", deleteStream)
+if deleteHeaders then
+    print("Headers of DELETE request: ")
+    for k, v in deleteHeaders:each() do
+        print(k, v)
+    end
+end
