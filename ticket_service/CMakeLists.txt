@@ -20,3 +20,10 @@ add_custom_command(TARGET lua_gcrypt
     $<TARGET_FILE:lua_gcrypt> 
     "${CMAKE_CURRENT_SOURCE_DIR}/lua_src/"
 )
+
+add_custom_command(TARGET lua_gcrypt
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy 
+    $<TARGET_FILE:lua_gcrypt> 
+    "${CMAKE_CURRENT_SOURCE_DIR}/../dhcp_service/lua_src"
+)
