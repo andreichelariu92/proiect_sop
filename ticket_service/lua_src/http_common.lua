@@ -46,7 +46,8 @@ function getCredentialsFromHeaders(headers)
         return nil
     end
 
-    -- Remove "Basic" from the begining of the string.
+    -- Remove "Basic" from the begining
+    -- of the string.
     local b, e = string.find(authority, "Basic ")
     authority = string.sub(authority, e+1)
     
