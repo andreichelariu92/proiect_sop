@@ -188,7 +188,8 @@ function makeTicket(grantingTicket, serviceKey)
     
     --Create ticket and add it to in memory list.
     local t = {["id"] = #g_tickets + 1, 
-               ["blob"] = encryptedData}
+               ["blob"] = encryptedData,
+               ["owner"] = userTable.user}
     table.insert(g_tickets, t)
 
     return t
@@ -196,4 +197,8 @@ end
 
 function searchTicket(ticketId)
     return g_tickets[ticketId]
+end
+
+function removeTicket(ticketId)
+    g_tickets[ticketId] = nil
 end
