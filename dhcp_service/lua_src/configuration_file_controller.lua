@@ -120,8 +120,6 @@ local function decryptTicket(ticketHtml)
     end
 
     --Decrypt the blob.
-    --TODO: ANdrei: Implement decryptBlob
-    --in configuration_file_model.lua
     local decryptedHtml = decryptBlob(blob)
     if not decryptedHtml then
         return "401"
@@ -163,7 +161,6 @@ local function getConfigurationFile(stream, headers)
     local text, err = readConfigurationFile(ticket)
     if not text then
         if err == "timeout" then
-            --TODO: ANdrei: add TIMEOUT 408
             setHeaders(stream, TIMEOUT)
         elseif err == "not authorized" then
             setHeaders(stream, NOT_AUTHORIZED)
