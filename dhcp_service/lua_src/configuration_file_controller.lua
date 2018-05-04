@@ -1,4 +1,5 @@
 require("http_common")
+require("configuration_file_model")
 
 local http_server = require("http.server")
 local http_headers = require("http.headers")
@@ -158,6 +159,7 @@ local function getConfigurationFile(stream, headers)
     
     --Read content of file
     --TODO: Andrei: implement
+    --[[
     local text, err = readConfigurationFile(ticket)
     if not text then
         if err == "timeout" then
@@ -166,7 +168,14 @@ local function getConfigurationFile(stream, headers)
             setHeaders(stream, NOT_AUTHORIZED)
         end
     end
+    ]]--
     --encrypt text with user key and IV
     --form html from encrypted data
     --send html to le user
 end
+
+local handlers = {
+    ["get"] = getConfigurationFile,
+    ["init"] = init
+}
+return handlers
