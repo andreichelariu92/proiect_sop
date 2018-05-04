@@ -1,7 +1,8 @@
 local http_server = require("http.server")
 local http_headers = require("http.headers")
-
+local cf_controller = require("configuration_file_controller")
 local g_controllers = {
+    cf_controller
 }
 
 local function dispach(myServer, stream)
@@ -48,5 +49,12 @@ local myServer = http_server.listen({
     onstream = dispach,
     tls = true
 })
+
+for _, controller in ipairs(g_controllers) do
+    if type(controller.init) == "function" then
+        controller.init()
+    end
+end
+
 myServer:listen()
 myServer:loop()
