@@ -1,5 +1,6 @@
 require("http_common")
 require("configuration_file_model")
+require("configuration_file_view")
 
 local http_server = require("http.server")
 local http_headers = require("http.headers")
@@ -161,20 +162,30 @@ local function getConfigurationFile(stream, headers)
     end
     
     --Read content of file
-    --TODO: Andrei: implement
-    --[[
     local text, err = readConfigurationFile(ticket)
     if not text then
         if err == "timeout" then
             setHeaders(stream, TIMEOUT)
         elseif err == "not authorized" then
             setHeaders(stream, NOT_AUTHORIZED)
+        elseif err == "internal error" then
+            setHeaders(stream, SERVER_ERROR)
         end
     end
-    ]]--
-    --encrypt text with user key and IV
-    --form html from encrypted data
-    --send html to le user
+
+    --Encrypt text with user key and IV.
+    local fileBlob = encryptFile(text, 
+                        ticket.key, 
+                        ticket.IV)
+    
+    --Form html and send it to user
+    local html = renderFile(fileBlob)
+    if not html then
+        setHeaders(stream, SERVER_ERROR)
+    end
+    
+    setHeaders(stream, SUCCESS)
+    stream:write_chunk(html, true)
 end
 
 local handlers = {
