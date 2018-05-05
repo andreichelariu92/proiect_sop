@@ -84,8 +84,8 @@ local function getConfigurationFile(ticket)
             print(k, v)
         end
     end
-
-    return status
+    
+    return status, stream:get_body_as_string()
 end
 
 print("")
@@ -102,5 +102,5 @@ ticket = tonumber(ticket)
 if not ticket then
     print("Invalid ticket id received from ticket service")
 end
-local file = getConfigurationFile(ticket)
+local status, file = getConfigurationFile(ticket)
 print(file)
