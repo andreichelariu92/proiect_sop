@@ -5,6 +5,7 @@ local gcrypt = require("lua_gcrypt")
 
 local g_key = nil
 local g_IV = nil
+local AES_BLOCK_SIZE = 16
 
 local http_request = require("http.request")
 local http_tls = require("http.tls")
@@ -89,6 +90,18 @@ local function parseKeyHtml(html)
 
     return key, IV
 end
+
+local function addPadding(data)
+    local dataLen = string.len(data)
+    if dataLen % AES_BLOCK_SIZE == 0 then
+        return data
+    end
+    
+    local padLen = AES_BLOCK_SIZE -
+                    (dataLen % AES_BLOCK_SIZE)
+    return data .. string.rep("~", padLen)
+end
+
 -----------------------------------------------------
 ------------------ Public functions -----------------
 -----------------------------------------------------
@@ -135,4 +148,33 @@ function decryptBlob(blob)
     cipher = nil --force the cipher to be destroyed
 
     return decryptedData
+end
+
+function readConfigurationFile(ticket)
+    --Check that the ticket is still valid.
+    if ticket.currentTime > ticket.endTime then
+        return nil, "timeout"
+    end
+    
+    --Check that the user has the rights to access
+    --the configuration file.
+    if ticket.role ~= "user" and 
+       ticket.role ~= "admin" then
+       return nil, "not authorized"
+    end
+
+    --Open file.
+    local file = io.open("../config_file_example.json")
+    if not file then
+        return nil, "internal error"
+    end
+    
+    --Read content
+    local text = file:read("*all")
+    return text
+end
+
+function encryptFile(fileText, key, IV)
+    local cipher = gcrypt.makeCipher(key, IV)
+    return cipher:encrypt(addPadding(fileText))
 end
