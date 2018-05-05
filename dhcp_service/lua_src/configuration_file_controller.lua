@@ -4,6 +4,9 @@ require("configuration_file_model")
 local http_server = require("http.server")
 local http_headers = require("http.headers")
 local http_util = require("http.util")
+local http_request = require("http.request")
+local http_tls = require("http.tls")
+local openssl_ctx = require("openssl.ssl.context")
 
 local function getTicket(ticketId)
     --Configure SSL context.
@@ -117,19 +120,19 @@ local function decryptTicket(ticketHtml)
     --Extract blob from html
     local blob = extractBlob(ticketHtml)
     if not blob then
-        return "500"
+        return nil, "500"
     end
 
     --Decrypt the blob.
     local decryptedHtml = decryptBlob(blob)
     if not decryptedHtml then
-        return "401"
+        return nil, "401"
     end
     
     --Extract the data from the html
-    local ticketTable = extractTicketTable(decryptedHtml) 
+    local ticketTable = extractTicketTable(decryptedHtml)
     if not ticketTable then
-        return "500"
+        return nil, "500"
     end
 
     return ticketTable
@@ -138,7 +141,7 @@ end
 local function getConfigurationFile(stream, headers)
     --Get ticket id from uri parameter.
     local pattern = 
-            "/DhcpService/ConfigurationFile?ticket=(%d+)"
+            "/DhcpService/ConfigurationFile%?ticket=(%d+)"
     local ticketId = getKeyFromHeaders(headers, pattern)
     ticketId = tonumber(ticketId)
     if not ticketId then
@@ -175,6 +178,7 @@ local function getConfigurationFile(stream, headers)
 end
 
 local handlers = {
+    ["pattern"] = string.lower("/DhcpService/ConfigurationFile"),
     ["get"] = getConfigurationFile,
     ["init"] = init
 }
