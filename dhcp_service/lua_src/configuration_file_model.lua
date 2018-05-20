@@ -12,7 +12,8 @@ local http_tls = require("http.tls")
 local openssl_ctx = require("openssl.ssl.context")
 local http_util = require("http.util")
 
-    
+require("http_common")
+
 local function createKey(context,
                 serviceName, 
                 servicePass)
@@ -176,5 +177,5 @@ end
 
 function encryptFile(fileText, key, IV)
     local cipher = gcrypt.makeCipher(key, IV)
-    return cipher:encrypt(addPadding(fileText))
+    return toHex(cipher:encrypt(addPadding(fileText)))
 end
