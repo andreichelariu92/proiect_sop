@@ -6,12 +6,15 @@ local main_controller = require("main_controller")
 --about window
 local about_view = require("about_view")
 local about_controller = require("about_controller")
-
 --services window
-
+local services_view = require("services_view")
+local services_controller = require("services_controller")
 --DHCP window
-
+local dhcp_view = require("dhcp_view")
+local dhcp_controller = require("dhcp_controller")
 --config file window
+local file_view = require("file_view")
+local file_controller = require("file_controller")
 
 --List of all windows
 local g_windows = nil
@@ -30,10 +33,31 @@ local function init()
         print("Error creating about window")
         return
     end
-
+    
+    local services_window = services_view.create(fl, services_controller)
+    if not services_window then
+        print("Error creating services window")
+        return
+    end
+    
+    local dhcp_window = dhcp_view.create(fl, dhcp_controller)
+    if not dhcp_window then
+        print("Error creating dhcp window")
+        return
+    end
+    
+    local file_window = file_view.create(fl, file_controller)
+    if not file_window then
+        print("error creating file window")
+        return
+    end
+    
     g_windows = {
         ["main"] = main_window,
-        ["about"] = about_window
+        ["about"] = about_window,
+        ["services"] = services_window,
+        ["dhcp"] = dhcp_window,
+        ["file"] = file_window
     }
 
 end
@@ -44,10 +68,13 @@ local function run()
     fl.run()
 end
 
-local function showWindow(name)
+local function showWindow(name, params)
     local w = g_windows[name]
     if w then
         g_currentWindow:hide()
+        if name == "file" then
+            file_view.setContent(params)
+        end
         w:show()
         g_currentWindow = w
     end
@@ -66,5 +93,4 @@ local t = {
     ["run"] = run,
     ["showPopup"] = showPopup
 }
-
 return t
