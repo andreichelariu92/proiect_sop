@@ -3,8 +3,6 @@ require("popup_view")
 
 require("client_model")
 
-local fl = require( "fltk4lua" )
-
 local function login_callback(user, pass)
     local wm = require("window_manager")
     
